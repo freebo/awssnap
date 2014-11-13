@@ -22,15 +22,17 @@ def get_volumes(id):
     volumes = conn.get_all_volumes(filters={'attachment.instance-id': id})
     for volume in volumes:
         if not 'Snapshot schedule' in volume.tags:
-            print 'Volume id [%s] has no Snapshot Schedule Tag' % (volume.id)
+            print '\tVolume id [%s] has no Snapshot Schedule Tag' % (volume.id)
             question = 'Assign a Snapshot Scedule? '
             if get_answer(question) == 'Yes':
                 print "Please Select (W)eekly or (D)aily"
                 schedule = raw_input(prompt)
                 volume.add_tag('Snapshot schedule', schedule)
+        else:
+            print '\tVolume id [%s]' % (volume.id)
         snapshots = conn.get_all_snapshots(filters={'volume-id': volume.id})
         for snapshot in snapshots:
-            print 'Snapshot id [%s} ' % (snapshot.id)
+            print '\t\tSnapshot id [%s} ' % (snapshot.id)
 #-----------------------------------------------------------------------------------------------------------
 def tag_instance(id,instance):
     print 'Please enter name for instance [%s] ' % (id)
