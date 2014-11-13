@@ -1,4 +1,3 @@
-
 #!/usr/bin/python
 import boto
 import boto.ec2
@@ -27,7 +26,7 @@ def tag_instance(id,instance):
     question = "Write Name tag [%s] to instance_name [%s]" % (instance_name, id)
     if get_answer(question) == "Yes":
         instance.add_tag("Name",instance_name)
-        print "Instance tagged"
+        print "Instance tagged" % (instance_name)
 #-----------------------------------------------------------------------------------------------------------
 def get_answer(question):
     while True:
