@@ -8,7 +8,7 @@ def get_instances():
     for reservation in reservations:
         for instance in reservation.instances: 
             if 'Name' in instance.tags:
-                print 'Instance %s (%s) [%s]' % (instance.tags['Name'], instance.id, instance.state)
+                print 'Instance %s [%s] (%s)' % (instance.tags['Name'], instance.id, instance.state)
             else:
                 print 'Instance %s [%s] has no Name tag' % (instance.id, instance.state)
                 question = 'Assign a Name Tag? '
@@ -57,7 +57,6 @@ def get_answer(question):
 
 prompt = '=> '
 for region in boto.ec2.regions():
-    #print ('%s '  % region.name )
     conn = region.connect()
     if region.name == 'ap-southeast-1' or region.name == 'cn-north-1' or region.name == 'us-gov-west-1':
         print 'Skipping Region ',region.name
