@@ -8,17 +8,23 @@ def get_instances():
     for reservation in reservations:
         for instance in reservation.instances: 
             if 'Name' in instance.tags:
-                print "%s (%s) [%s]" % (instance.tags['Name'], instance.id, instance.state)
+                print "Instance %s (%s) [%s]" % (instance.tags['Name'], instance.id, instance.state)
             else:
                 print "Instance %s [%s] has no Name tag" % (instance.id, instance.state)
                 question = "Assign a Name Tag? "
                 if get_answer(question) == "Yes":
                     tag_instance(instance.id,instance)
-        volumes = conn.get_all_volumes(filters={'attachment.instance-id': instance.id})
-        for volume in volumes:
-            print 'Volume id [%s] size %s ' % (volume.id, volume.size )
+        get_volumes(instance.id)
 
 
+#-----------------------------------------------------------------------------------------------------------
+def get_volumes(id):
+    volumes = conn.get_all_volumes(filters={'attachment.instance-id': id})
+    for volume in volumes:
+        print 'Volume id [%s] size %s ' % (volume.id, volume.size )
+        snapshots = conn.get_all_snapshots(filters={'volume-id': volume.id})
+        for snapshot in snapshots:
+            print 'Snapshot id [%s} ' % (snapshot.id)
 #-----------------------------------------------------------------------------------------------------------
 def tag_instance(id,instance):
     print "Please enter name for instance [%s] " % (id)
