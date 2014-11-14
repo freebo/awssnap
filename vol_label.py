@@ -37,12 +37,13 @@ def get_volumes(id):
         snapshots = conn.get_all_snapshots(filters={'volume-id': volume.id})
         for snapshot in snapshots:
             print snapshot.tags
-            print snapshot.start_time
-            snap = dateutil.parser.parse (snapshot.start_time)
-            snap1 = snap.astimezone(dateutil.tz.tzutc())
-            a = today - snap
+            print 'Snap %s ' % (snapshot.start_time)
+            snap_notz = dateutil.parser.parse(snapshot.start_time)
+            today_notz = dateutil.parser.parse(today)
+            print 'Today %s' % (today)
+            a = today - snap_notz
             print 'Hours since snapshot ' % (a)
-            #print '\t\tSnapshot id [%s] %s ' % (snapshot.id, snapshot.time)
+            print '\t\tSnapshot id [%s] %s ' % (snapshot.id, snapshot.time)
 #-----------------------------------------------------------------------------------------------------------
 def tag_instance(id,instance):
     print 'Please enter name for instance [%s] ' % (id)
@@ -67,8 +68,8 @@ def get_answer(question):
 
 #MAIN-------------------------------------------------------------------------------------------------------
 
-today = datetime.now()
-utc=pytz.utc
+today = datetime.utcnow()
+
 prompt = '=> '
 for region in boto.ec2.regions():
     conn = region.connect()
