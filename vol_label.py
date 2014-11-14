@@ -1,12 +1,14 @@
 #!/usr/bin/python
 import boto
 import boto.ec2
+from datetime import datetime
 
 #-----------------------------------------------------------------------------------------------------------
 def get_instances():
     reservations = conn.get_all_instances()
     for reservation in reservations:
         for instance in reservation.instances: 
+            print
             if 'Name' in instance.tags:
                 print 'Instance %s [%s] (%s)' % (instance.tags['Name'], instance.id, instance.state)
             else:
@@ -32,7 +34,13 @@ def get_volumes(id):
             print '\tVolume id [%s]' % (volume.id)
         snapshots = conn.get_all_snapshots(filters={'volume-id': volume.id})
         for snapshot in snapshots:
-            print '\t\tSnapshot id [%s} ' % (snapshot.id)
+            print snapshot.tags
+            print snapshot.start_time
+            now_iso = now.isoformat() 
+            snap = snapshot.start_time
+            a=now_iso - snap
+            print 'Hours since snapshot ' % (a)
+            #print '\t\tSnapshot id [%s] %s ' % (snapshot.id, snapshot.time)
 #-----------------------------------------------------------------------------------------------------------
 def tag_instance(id,instance):
     print 'Please enter name for instance [%s] ' % (id)
@@ -57,6 +65,7 @@ def get_answer(question):
 
 #MAIN-------------------------------------------------------------------------------------------------------
 
+now = datetime.now()
 prompt = '=> '
 for region in boto.ec2.regions():
     conn = region.connect()
