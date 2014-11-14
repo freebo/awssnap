@@ -3,6 +3,7 @@ import boto
 import boto.ec2
 from datetime import datetime
 import dateutil.parser
+import pytz
 
 #-----------------------------------------------------------------------------------------------------------
 def get_instances():
@@ -39,7 +40,7 @@ def get_volumes(id):
             print snapshot.start_time
             snap = dateutil.parser.parse (snapshot.start_time)
             snap1 = snap.astimezone(dateutil.tz.tzutc())
-            a = today - snap1
+            a = today - snap
             print 'Hours since snapshot ' % (a)
             #print '\t\tSnapshot id [%s] %s ' % (snapshot.id, snapshot.time)
 #-----------------------------------------------------------------------------------------------------------
@@ -67,7 +68,7 @@ def get_answer(question):
 #MAIN-------------------------------------------------------------------------------------------------------
 
 today = datetime.now()
-print today
+utc=pytz.utc
 prompt = '=> '
 for region in boto.ec2.regions():
     conn = region.connect()
