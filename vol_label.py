@@ -38,12 +38,15 @@ def get_volumes(id):
         for snapshot in snapshots:
             print snapshot.tags
             print 'Snap %s ' % (snapshot.start_time)
-            snap_notz = dateutil.parser.parse(snapshot.start_time)
+            limit = datetime.now() - datetime.datetime.timedelta(days=3)
+            if dateutil.parser.parse(snapshot.start_time).date() <= limit.date():
+                print 'Snapshot [%s] is older than 3 days' % snapshot.name
+"""
             today_notz = dateutil.parser.parse(today)
             print 'Today %s' % (today)
             a = today - snap_notz
             print 'Hours since snapshot ' % (a)
-            print '\t\tSnapshot id [%s] %s ' % (snapshot.id, snapshot.time)
+            print '\t\tSnapshot id [%s] %s ' % (snapshot.id, snapshot.time)"""
 #-----------------------------------------------------------------------------------------------------------
 def tag_instance(id,instance):
     print 'Please enter name for instance [%s] ' % (id)
