@@ -1,8 +1,8 @@
 #!/usr/bin/python
 import boto
 import boto.ec2
-from datetime import datetime
-import dateutil.parser
+from datetime import timedelta, datetime 
+from dateutil import parser
 import pytz
 
 #-----------------------------------------------------------------------------------------------------------
@@ -33,20 +33,20 @@ def get_volumes(id):
                 schedule = raw_input(prompt)
                 volume.add_tag('Snapshot schedule', schedule)
         else:
-            print '\tVolume id [%s]' % (volume.id)
+            print '\tVolume id [%s] Schedule (%s) ' % (volume.id, volume.tags['Snapshot schedule'])
+
         snapshots = conn.get_all_snapshots(filters={'volume-id': volume.id})
+
+        if volume.tags['Snapshot schedule'] == 'W':
+            expiry=7
+        elif volume.tags['Snapshot schedule'] == 'D':
+            expiry=1
+
         for snapshot in snapshots:
-            print snapshot.tags
-            print 'Snap %s ' % (snapshot.start_time)
-            limit = datetime.now() - datetime.datetime.timedelta(days=3)
-            if dateutil.parser.parse(snapshot.start_time).date() <= limit.date():
-                print 'Snapshot [%s] is older than 3 days' % snapshot.name
-"""
-            today_notz = dateutil.parser.parse(today)
-            print 'Today %s' % (today)
-            a = today - snap_notz
-            print 'Hours since snapshot ' % (a)
-            print '\t\tSnapshot id [%s] %s ' % (snapshot.id, snapshot.time)"""
+            limit = datetime.now() - timedelta(days=expiry)
+            if parser.parse(snapshot.start_time).date() <= limit.date():
+                print 'Snapshot [%s] is older than %s days' % (snapshot.id, expiry)
+                
 #-----------------------------------------------------------------------------------------------------------
 def tag_instance(id,instance):
     print 'Please enter name for instance [%s] ' % (id)
@@ -71,12 +71,13 @@ def get_answer(question):
 
 #MAIN-------------------------------------------------------------------------------------------------------
 
-today = datetime.utcnow()
+#today = datetime.date.today()
 
 prompt = '=> '
 for region in boto.ec2.regions():
     conn = region.connect()
-    if region.name == 'ap-southeast-1' or region.name == 'cn-north-1' or region.name == 'us-gov-west-1':
+    #if region.name == 'ap-southeast-1' or region.name == 'cn-north-1' or region.name == 'us-gov-west-1':
+    if region.name != 'ap-southeast-2':
         print 'Skipping Region ',region.name
         next
     else:
