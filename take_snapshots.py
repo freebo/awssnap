@@ -10,7 +10,15 @@ def get_instances():
     reservations = conn.get_all_instances()
     for reservation in reservations:
         for instance in reservation.instances: 
-            get_volumes(instance.id)
+            print
+            if 'Name' in instance.tags:
+                print 'Instance %s [%s] (%s)' % (instance.tags['Name'], instance.id, instance.state)
+            else:
+                print 'Instance %s [%s] has no Name tag' % (instance.id, instance.state)
+                question = 'Assign a Name Tag? '
+                if get_answer(question) == 'Yes':
+                    tag_instance(instance.id,instance)
+        get_volumes(instance.id)
 
 
 #-----------------------------------------------------------------------------------------------------------
@@ -19,20 +27,27 @@ def get_volumes(id):
     for volume in volumes:
         if 'Snapshot schedule' in volume.tags:
             print '\tVolume id [%s] Schedule (%s) ' % (volume.id, volume.tags['Snapshot schedule'])
-            snapshots = conn.get_all_snapshots(filters={'volume-id': volume.id})
-            if volume.tags['Snapshot schedule'] == 'W':
-                expiry=7
-            elif volume.tags['Snapshot schedule'] == 'D':
-                expiry=1
-            for snapshot in snapshots:
-                limit = datetime.now() - timedelta(days=expiry)
-                if parser.parse(snapshot.start_time).date() <= limit.date():
-                    print 'Snapshot [%s] is older than %s days' % (snapshot.id, expiry)
         else:
             print '\tVolume id [%s] has no Snapshot Schedule Tag' % (volume.id)
+            question = 'Assign a Snapshot Scedule? '
+            if get_answer(question) == 'Yes':
+                print "Please Select (W)eekly or (D)aily"
+                schedule = raw_input(prompt)
+                volume.add_tag('Snapshot schedule', schedule)
+            else:
+                break
 
+        snapshots = conn.get_all_snapshots(filters={'volume-id': volume.id})
 
+        if volume.tags['Snapshot schedule'] == 'W':
+            expiry=7
+        elif volume.tags['Snapshot schedule'] == 'D':
+            expiry=1
 
+        for snapshot in snapshots:
+            limit = datetime.now() - timedelta(days=expiry)
+            if parser.parse(snapshot.start_time).date() <= limit.date():
+                print 'Snapshot [%s] is older than %s days' % (snapshot.id, expiry)
                 
 #-----------------------------------------------------------------------------------------------------------
 def tag_instance(id,instance):
