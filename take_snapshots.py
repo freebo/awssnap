@@ -14,10 +14,16 @@ def get_instances():
 
 
 #-----------------------------------------------------------------------------------------------------------
+def create_snapshot(vol_id):
+    snap = vol_id.create_snapshot("auto")
+    print "\t\t\tCreated Snapshot %s " % snap
+
+#-----------------------------------------------------------------------------------------------------------
 def do_volumes(id):
     volumes = conn.get_all_volumes(filters={'attachment.instance-id': id})
     for volume in volumes:
         if 'Snapshot schedule' in volume.tags:
+            snapshot_volume = 'Y'
             print '\tInstance %s Volume id [%s] Schedule (%s) ' % (id, volume.id, volume.tags['Snapshot schedule'])
             snapshots = conn.get_all_snapshots(filters={'volume-id': volume.id})
             if volume.tags['Snapshot schedule'] == 'W':
@@ -26,13 +32,16 @@ def do_volumes(id):
                 expiry=1
             #If no snapshots exist take one
             if not snapshots:
-                print 'No Snapshot'
+                snapshot_volume = 'Y'
             for snapshot in snapshots:
                 limit = datetime.now() - timedelta(days=expiry)
                 if parser.parse(snapshot.start_time).date() <= limit.date():
                     print '\t\tSnapshot [%s] is older than %s days limit date is %s' % (snapshot.id, expiry, limit.date())
                 else:
                     print '\t\tSnapshot [%s] is newer than %s days' % (snapshot.id, expiry)
+                    snapshot_volume = 'N'
+            if snapshot_volume == 'Y':
+                create_snapshot(volume)
         else:
             print '\tInstance %s Volume id [%s] has no Snapshot Schedule Tag' % (id, volume.id)
 
@@ -41,7 +50,6 @@ def do_volumes(id):
                 
 #MAIN-------------------------------------------------------------------------------------------------------
 
-#today = datetime.date.today()
 
 prompt = '=> '
 for region in boto.ec2.regions():
