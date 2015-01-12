@@ -15,7 +15,7 @@ def get_instances():
 
 #-----------------------------------------------------------------------------------------------------------
 def create_snapshot(vol_id):
-    snap = vol_id.create_snapshot("auto")
+    snap = vol_id.create_snapshot("auto snapshot of %s" % vol_id)
     print "\t\t\tCreated Snapshot %s " % snap
 
 #-----------------------------------------------------------------------------------------------------------
